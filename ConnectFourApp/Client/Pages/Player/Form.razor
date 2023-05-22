@@ -1,0 +1,35 @@
+﻿<EditForm Model="@Player" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator/>
+    <div class="create-player">
+        <div class="inputs">
+            <label>Initials :</label>
+            <div>
+                <InputText @bind-Value="@Player.Initials"/>
+                <ValidationMessage For="@(() => Player.Initials)"/>
+            </div>
+        </div>
+
+
+        <div class="inputs">
+            <label>Score :</label>
+            <div class="score">
+                <InputNumber @bind-Value="@Player.Score"/>
+                <ValidationMessage For="@(() => Player.Score)"/>
+            </div>
+        </div>
+    </div>
+    <button class="form-a" type="submit">@ButtonText</button>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public Player Player { get; set; }
+
+    [Parameter]
+    public string ButtonText { get; set; } = "Save";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+}

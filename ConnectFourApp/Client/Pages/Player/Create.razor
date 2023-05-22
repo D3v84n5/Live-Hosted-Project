@@ -1,0 +1,25 @@
+﻿@page "/player/create"
+@inject HttpClient Http
+@inject NavigationManager UriHelper
+
+<div class="form-container">
+    <div class="form-menu-create">
+        
+        <h1 class="form-title">Create</h1>
+
+        <Form ButtonText="Create Player" Player="@_player"
+              OnValidSubmit="@CreatePlayer">
+        </Form>
+    </div>
+</div>
+
+@code {
+    Player _player = new();
+
+    async Task CreatePlayer()
+    {
+        await Http.PostAsJsonAsync("api/player", _player);
+        UriHelper.NavigateTo("player");
+    }
+
+}

@@ -1,0 +1,138 @@
+@inject State State
+@using ConnectFourApp.Client.Components
+@using ConnectFourApp.Client.Services
+
+<div class="page-container">
+
+    <header>
+        <nav class="nav-menu">
+            <button type="button">menu</button>
+            <img src="./assets/images/logo.svg" alt="logo" class="logo"/>
+            <button @onclick="@ResetGame">restart</button>
+        </nav>
+    </header>
+
+    <div class="play-menu">
+        <span class=@($"marker{State.CurrentPlayer} a") @onclick="() => PlayPiece(0)"></span>
+        <span class=@($"marker{State.CurrentPlayer} b") @onclick="() => PlayPiece(1)"></span>
+        <span class=@($"marker{State.CurrentPlayer} c") @onclick="() => PlayPiece(2)"></span>
+        <span class=@($"marker{State.CurrentPlayer} d") @onclick="() => PlayPiece(3)"></span>
+        <span class=@($"marker{State.CurrentPlayer} e") @onclick="() => PlayPiece(4)"></span>
+        <span class=@($"marker{State.CurrentPlayer} f") @onclick="() => PlayPiece(5)"></span>
+        <span class=@($"marker{State.CurrentPlayer} g") @onclick="() => PlayPiece(6)"></span>
+    </div>
+    
+    <main>
+
+        <PlayerScoreBoardComponent PlayerNum="1" ImgSrc="./assets/images/player-one.svg" Score="@Player1Score" />
+
+        <div class="board-container">
+            <img src="./assets/images/board-layer-black-large.svg" class="board-layer_black" alt=""/>
+            <div class="board">
+                @for (var i = 0; i < 42; i++)
+                {
+                    <span class="board-cell">
+                        <span></span>
+                    </span>
+                }
+
+            </div>
+
+            @for (var i = 0; i < 42; i++)
+            {
+                <span class="@_chips[i]"></span>
+            }
+
+            <img src="./assets/images/board-layer-white-large.svg" class="board-layer_white" alt=""/>
+        </div>
+
+        <PlayerScoreBoardComponent PlayerNum="2" ImgSrc="./assets/images/player-two.svg" Score="@Player2Score"/>
+
+    </main>
+
+    <YourTurnComponent @ref="_timer" PlayerFill="@State.CurrentPlayer" Winner="@_winner"/>
+
+    <div class="winning-message" style="@ResetWinner">
+        <span class="winner">@($"PLAYER {_winner}")</span>
+        <span>wins</span>
+        <button class="reset-button" @onclick="@ResetGame">play again</button>
+    </div>
+
+</div>
+
+@code {
+
+    private string[] _chips = new string[42];
+
+    private string _winner = string.Empty;
+
+    private string _errorMessage = string.Empty;
+
+    private string ResetWinner => (_winner == string.Empty) ? "display: none;" : "";
+
+    public int Player1Score = 0;
+
+    public int Player2Score = 0;
+
+    protected override void OnInitialized()
+    {
+        State.ResetBoard();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _timer.Start(30);
+        }
+    }
+
+    private YourTurnComponent _timer;
+
+    private void PlayPiece(byte column)
+    {
+        _errorMessage = string.Empty;
+
+        try
+        {
+            var playedCell = State.PlayPiece(column);
+            var addCssClass = $"player{State.CurrentPlayer} column{column} drop{playedCell}";
+            _chips[State.CurrentTurn - 1] = addCssClass;
+
+            _timer.Start(30);
+        }
+        catch (ArgumentException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+
+        _winner = State.CheckForWin() switch
+        {
+            State.WinState.Player1Wins => "1",
+            State.WinState.Player2Wins => "2",
+            State.WinState.Draw => "TIE",
+            _ => ""
+        };
+
+        if (_winner == "1")
+        {
+            Player1Score += 1;
+        }
+        else if (_winner == "2")
+        {
+            Player2Score += 1;
+        }
+    }
+
+
+
+    void ResetGame()
+    {        
+        State.ResetBoard();
+        _winner = string.Empty;
+        _errorMessage = string.Empty;
+        _chips = new string[42];
+        _timer.Start(30);
+    }
+
+}
